@@ -6,7 +6,7 @@ extern crate lazy_static;
 
 use clap::{App, Arg};
 use clipboard::{ClipboardContext, ClipboardProvider};
-use regex::RegexBuilder;
+use regex::Regex;
 use std::{env, fmt, io};
 
 type Result<T> = ::std::result::Result<T, Error>;
@@ -109,21 +109,36 @@ fn extract_service_url(text: &str, host: &str) -> Result<String> {
     let escaped = regex::escape(host);
     for pat in &[
         format!(
-            r"\bgit@{}:([[:alnum:]_-]+/[[:alnum:]_-]+)(?:\.git)?\b",
+            r"\bgit@{}:([[:alnum:]_-]+/[[:alnum:]_.-]+)(?:\.git)?\b",
             escaped
         ),
         format!(
-            r"\bhttps://{}/([[:alnum:]_-]+/[[:alnum:]_-]+)(?:\.git)?\b",
+            r"\b(?:https://){}/([[:alnum:]_-]+/[[:alnum:]_.-]+)(?:\.git)?\b",
             escaped
         ),
     ] {
-        let reg = RegexBuilder::new(pat).unicode(false).build()?;
-        if let Some(caps) = reg.captures(text) {
+        if let Some(caps) = Regex::new(pat)?.captures(text) {
             let slug = caps.get(1).unwrap().as_str();
             return Ok(format!("https://{}/{}", host, slug));
         }
     }
     Err(Error::TryNextHost)
+}
+
+// TODO: Support bitbucket pages and gitlab pages
+fn extract_project_url(text: &str) -> Result<String> {
+    let pat = r"\bhttps://([[:alnum:]_-]+)\.github\.io(?:/([[:alnum:]_.-]+))?\b";
+    match Regex::new(pat)?.captures(text) {
+        None => Err(Error::RepoUrlNotFound(text.to_string())),
+        Some(caps) => {
+            let user = caps.get(1).unwrap().as_str();
+            if let Some(proj) = caps.get(2) {
+                Ok(format!("https://github.com/{}/{}", user, proj.as_str()))
+            } else {
+                Ok(format!("https://github.com/{u}/{u}.github.io", u = user))
+            }
+        }
+    }
 }
 
 fn extract_any_service_url(text: &str) -> Result<String> {
@@ -133,7 +148,7 @@ fn extract_any_service_url(text: &str) -> Result<String> {
             return r;
         }
     }
-    Err(Error::RepoUrlNotFound(text.to_string()))
+    extract_project_url(text)
 }
 
 fn main() -> Result<()> {
