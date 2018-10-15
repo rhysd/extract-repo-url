@@ -7,6 +7,7 @@ extern crate lazy_static;
 use clap::{App, Arg};
 use clipboard::{ClipboardContext, ClipboardProvider};
 use regex::Regex;
+use std::process::Command;
 use std::{env, fmt, io};
 
 type Result<T> = ::std::result::Result<T, Error>;
@@ -19,6 +20,8 @@ enum Error {
     ClipboardReadFailure(String),
     TryNextHost,
     InvalidRegex(regex::Error),
+    OpenNotSupported,
+    CannotOpenUrl(String),
 }
 
 impl fmt::Debug for Error {
@@ -32,6 +35,8 @@ impl fmt::Debug for Error {
                 format!("Could not read clipboard content: {}", msg)
             }
             Error::InvalidRegex(inner) => format!("{}", inner),
+            Error::OpenNotSupported => "Cannot open a browser on this OS".to_string(),
+            Error::CannotOpenUrl(u) => format!("Cannot open URL '{}'", u),
         };
         write!(f, "{}", msg)
     }
@@ -62,7 +67,7 @@ lazy_static! {
             "bitbucket.org".to_string(),
             "gitlab.com".to_string(),
         ];
-        if let Ok(var) = env::var("EXTRACT_SERVICE_HOSTS") {
+        if let Ok(var) = env::var("EXTRACT_REPO_URL_SERVICE_HOSTS") {
             for host in var.split(',') {
                 hosts.push(host.to_string());
             }
@@ -71,13 +76,23 @@ lazy_static! {
     };
 }
 
-fn parse_argv() -> Result<String> {
+enum Action {
+    Open,
+    Print,
+}
+
+fn parse_argv() -> Result<(String, Action)> {
     let matches = App::new("extract-repo-url")
         .author("rhysd <https://rhysd.github.io>")
         .version("v0.1.0")
         .usage("extract-repo-url [<text>]")
         .about("Extract repository URL from text (from clipboard by default)")
         .arg(
+            Arg::with_name("open")
+                .long("open")
+                .short("o")
+                .help("Open URL in a browser"),
+        ).arg(
             Arg::with_name("stdin")
                 .long("stdin")
                 .short("s")
@@ -87,6 +102,7 @@ fn parse_argv() -> Result<String> {
                 .value_name("TEXT")
                 .help("Text extracting from"),
         ).get_matches();
+
     let text = if let Some(text) = matches.value_of("text") {
         text.to_string()
     } else if matches.is_present("stdin") {
@@ -98,10 +114,17 @@ fn parse_argv() -> Result<String> {
         let mut ctx: ClipboardContext = ClipboardProvider::new()?;
         ctx.get_contents()?
     };
+
+    let action = if matches.is_present("open") {
+        Action::Open
+    } else {
+        Action::Print
+    };
+
     if text.is_empty() {
         Err(Error::EmptyText)?
     } else {
-        Ok(text)
+        Ok((text, action))
     }
 }
 
@@ -151,8 +174,52 @@ fn extract_any_service_url(text: &str) -> Result<String> {
     extract_project_url(text)
 }
 
+#[cfg(target_os = "macos")]
+static OPEN_COMMANDS: &[&[&str]] = &[&["open"]];
+
+#[cfg(target_os = "linux")]
+static OPEN_COMMANDS: &[&[&str]] = &[&["xdg-open"], &["gvfs-open"], &["gnome-open"]];
+
+#[cfg(target_os = "windows")]
+static OPEN_COMMANDS: &[&[&str]] = &[&["cmd", "/C", "start"]];
+
+#[cfg(
+    not(
+        any(
+            target_os = "windows",
+            target_os = "macos",
+            target_os = "linux"
+        )
+    )
+)]
+static OPEN_COMMANDS: &[&[&str]] = &[];
+
+fn open_in_browser(url: &str) -> Result<()> {
+    if let Ok(cmd) = env::var("EXTRACT_REPO_URL_OPEN_CMD") {
+        Command::new(cmd).arg(url).status()?;
+        return Ok(());
+    }
+
+    if OPEN_COMMANDS.is_empty() {
+        return Err(Error::OpenNotSupported);
+    }
+
+    for cmdline in OPEN_COMMANDS {
+        let (cmd, args) = cmdline.split_first().unwrap();
+        if Command::new(cmd).args(args).arg(url).status()?.success() {
+            return Ok(());
+        }
+    }
+
+    Err(Error::CannotOpenUrl(url.to_string()))
+}
+
 fn main() -> Result<()> {
-    let text = parse_argv()?;
-    println!("{}", extract_any_service_url(text.as_str())?);
+    let (text, action) = parse_argv()?;
+    let url = extract_any_service_url(text.as_str())?;
+    match action {
+        Action::Print => println!("{}", url),
+        Action::Open => open_in_browser(url.as_str())?,
+    }
     Ok(())
 }
