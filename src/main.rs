@@ -7,13 +7,14 @@ extern crate lazy_static;
 use clap::{App, Arg};
 use clipboard::{ClipboardContext, ClipboardProvider};
 use regex::RegexBuilder;
-use std::{env, fmt};
+use std::{env, fmt, io};
 
 type Result<T> = ::std::result::Result<T, Error>;
 
 #[derive(PartialEq)]
 enum Error {
     EmptyText,
+    IoFailure(String),
     RepoUrlNotFound(String),
     ClipboardReadFailure(String),
     TryNextHost,
@@ -24,6 +25,7 @@ impl fmt::Debug for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match self {
             Error::EmptyText => "Input text is empty".to_string(),
+            Error::IoFailure(msg) => format!("IO failure: {}", msg),
             Error::RepoUrlNotFound(text) => format!("No repository URL was found in '{}'", text),
             Error::TryNextHost => unreachable!(),
             Error::ClipboardReadFailure(msg) => {
@@ -32,6 +34,12 @@ impl fmt::Debug for Error {
             Error::InvalidRegex(inner) => format!("{}", inner),
         };
         write!(f, "{}", msg)
+    }
+}
+
+impl From<io::Error> for Error {
+    fn from(inner: io::Error) -> Error {
+        Error::IoFailure(format!("{}", inner))
     }
 }
 
@@ -70,12 +78,22 @@ fn parse_argv() -> Result<String> {
         .usage("extract-repo-url [<text>]")
         .about("Extract repository URL from text (from clipboard by default)")
         .arg(
+            Arg::with_name("stdin")
+                .long("stdin")
+                .short("s")
+                .help("Read text from STDIN"),
+        ).arg(
             Arg::with_name("text")
                 .value_name("TEXT")
                 .help("Text extracting from"),
         ).get_matches();
     let text = if let Some(text) = matches.value_of("text") {
         text.to_string()
+    } else if matches.is_present("stdin") {
+        use io::Read;
+        let mut buf = String::new();
+        io::stdin().read_to_string(&mut buf)?;
+        buf
     } else {
         let mut ctx: ClipboardContext = ClipboardProvider::new()?;
         ctx.get_contents()?
