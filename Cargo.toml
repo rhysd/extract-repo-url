@@ -1,0 +1,11 @@
+[package]
+name = "extract-repo-url"
+version = "0.1.0"
+authors = ["rhysd <lin90162@yahoo.co.jp>"]
+
+[dependencies]
+lazy_static = "1.1"
+regex = "1.0"
+clap = "2.32"
+clipboard = "0.5"
+failure = "0.1.2"
