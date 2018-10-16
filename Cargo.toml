@@ -12,7 +12,7 @@ license-file = "LICENSE.txt"
 include = ["LICENSE.txt", "Cargo.toml", "src/*.rs"]
 
 [badges]
-maintenance = { status = "experimental" }
+maintenance = { status = "actively-developed" }
 
 [dependencies]
 lazy_static = "1.1"
