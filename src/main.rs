@@ -196,8 +196,12 @@ static OPEN_COMMANDS: &[&[&str]] = &[];
 
 fn open_in_browser(url: &str) -> Result<()> {
     if let Ok(cmd) = env::var("EXTRACT_REPO_URL_OPEN_CMD") {
-        Command::new(cmd).arg(url).status()?;
-        return Ok(());
+        let status = Command::new(cmd).arg(url).status()?;
+        return if status.success() {
+            Ok(())
+        } else {
+            Err(Error::CannotOpenUrl(url.to_string()))
+        };
     }
 
     if OPEN_COMMANDS.is_empty() {
