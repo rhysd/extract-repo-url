@@ -9,7 +9,7 @@ readme = "README.md"
 keywords = ["github", "gitlab", "bitbucket", "url", "extract"]
 categories = ["command-line-utilities"]
 license-file = "LICENSE.txt"
-include = ["LICENSE.txt", "Cargo.toml", "src/main.rs"]
+include = ["LICENSE.txt", "Cargo.toml", "src/*.rs"]
 
 [badges]
 maintenance = { status = "experimental" }
