@@ -2,6 +2,17 @@
 name = "extract-repo-url"
 version = "0.1.0"
 authors = ["rhysd <lin90162@yahoo.co.jp>"]
+description = "Small CLI tool to extract repository URL from text (from clipboard by default)"
+repository = "https://github.com/rhysd/extract-repo-url"
+homepage = "https://github.com/rhysd/extract-repo-url#readme"
+readme = "README.md"
+keywords = ["github", "gitlab", "bitbucket", "url", "extract"]
+categories = ["command-line-utilities"]
+license-file = "LICENSE.txt"
+include = ["LICENSE.txt", "Cargo.toml", "src/main.rs"]
+
+[badges]
+maintenance = { status = "experimental" }
 
 [dependencies]
 lazy_static = "1.1"
