@@ -37,7 +37,7 @@ fn parse_argv() -> Result<(String, Action)> {
             Arg::with_name("stdin")
                 .long("stdin")
                 .short("s")
-                .help("Read text from STDIN"),
+                .help("Read text from stdin"),
         ).arg(
             Arg::with_name("text")
                 .value_name("TEXT")

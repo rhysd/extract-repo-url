@@ -50,3 +50,22 @@ impl From<regex::Error> for Error {
         Error::InvalidRegex(inner)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use clipboard::{ClipboardContext, ClipboardProvider};
+    use std::io;
+    use std::io::Write;
+
+    #[test]
+    fn try_operator() {
+        fn test() -> Result<()> {
+            write!(io::stdout(), "")?;
+            let _: ClipboardContext = ClipboardProvider::new()?;
+            regex::Regex::new("")?;
+            Ok(())
+        }
+        assert_eq!(test(), Ok(()));
+    }
+} // mod tests
