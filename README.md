@@ -1,5 +1,6 @@
 `extract-repo-url`
 ==================
+[![Crates.io][crates-io badge]][repository]
 
 ## Basic Usage
 
@@ -54,3 +55,6 @@ $ RUST_TEST_THREADS=1 cargo test
 
 [MIT](./LICENSE.txt)
 
+
+[repository]: https://github.com/rhysd/extract-repo-url
+[crates-io badge]: https://img.shields.io/crates/v/extract-repo-url.svg
