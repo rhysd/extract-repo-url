@@ -71,6 +71,9 @@ pub fn extract_any_service_url(text: &str) -> Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fs::*;
+    use std::io;
+    use std::path::*;
 
     macro_rules! testcase {
         ($name:ident, $inputs:expr, $expected:expr,) => {
@@ -91,6 +94,7 @@ mod tests {
             "This is text https://github.com/foo/bar",
             "https://github.com/foo/bar is great",
             "oh, https://github.com/foo/bar?",
+            "https://github.com/foo/bar/blob/master/tests/tests.rs"
         ],
         "https://github.com/foo/bar",
     );
@@ -115,6 +119,15 @@ mod tests {
             "git clone git@github.com:foo/bar.git",
         ],
         "https://github.com/foo/bar",
+    );
+
+    testcase!(
+        clone_url_edge_case,
+        [
+            "https://github.com/foo/bar.git.git",
+            "git@github.com:foo/bar.git.git",
+        ],
+        "https://github.com/foo/bar.git",
     );
 
     testcase!(
@@ -216,6 +229,41 @@ mod tests {
         ] {
             let ret = extract_any_service_url(text);
             assert!(ret.is_err(), "Unexpected success: {:?}", ret);
+        }
+    }
+
+    #[test]
+    fn real_world() {
+        use io::BufRead;
+
+        let mut path = env::current_dir().unwrap();
+        path.push(Path::new(file!()).parent().unwrap());
+        path.push("testdata");
+        path.push("top1000-repos.txt");
+
+        for slug in io::BufReader::new(File::open(path).unwrap()).lines() {
+            let slug = slug.unwrap();
+            let url = format!("https://github.com/{}", slug);
+            for text in &[
+                url.clone(),
+                format!("hello, {} world", url),
+                format!("oh, {}!?", url),
+                format!("{}/tree/master/tests/data", url),
+            ] {
+                assert_eq!(extract_any_service_url(text), Ok(url.clone()));
+            }
+
+            let url = format!("git@github.com:{}", slug);
+            for text in &[
+                url.clone(),
+                format!("git clone {}", url),
+                format!("oh, {}!?", url),
+            ] {
+                assert_eq!(
+                    extract_any_service_url(text),
+                    Ok(format!("https://github.com/{}", slug))
+                );
+            }
         }
     }
 } // mod tests
