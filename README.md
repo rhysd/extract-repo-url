@@ -44,6 +44,12 @@ $ open `extract-repo-url`
 
 ## Development
 
+On Linux, you need to install X11 library:
+
+```
+sudo apt-get install xorg-dev
+```
+
 How to run test:
 
 ```sh
