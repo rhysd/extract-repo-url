@@ -2,6 +2,12 @@
 ==================
 [![Crates.io][crates-io badge]][repository]
 
+## Installation
+
+```
+cargo install extract-repo-url
+```
+
 ## Basic Usage
 
 Outputs a repository URL extracted from clipboard text.
@@ -23,6 +29,10 @@ It can also detect
 - GitLab (e.g. `foo bar https://gitlab.com/foo/bar` -> `https://gitlab.com/foo/bar`)
 
 You can add more hosts with `$EXTRACT_REPO_URL_SERVICE_HOSTS` environment variable.
+
+```sh
+export EXTRACT_REPO_URL_SERVICE_HOSTS="github.your-site.com, gitlab.your-site.com"
+```
 
 Please try `--help` option to see more details.
 
