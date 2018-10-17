@@ -62,3 +62,8 @@ before_cache:
 notifications:
   email:
     on_success: never
+
+addons:
+  apt:
+    packages:
+    - xorg-dev
