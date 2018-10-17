@@ -1,6 +1,7 @@
 `extract-repo-url`
 ==================
 [![Crates.io][crates-io badge]][repository]
+[![Windows Build][]][Appveyor]
 
 ## Installation
 
@@ -74,3 +75,5 @@ $ RUST_TEST_THREADS=1 cargo test
 
 [repository]: https://github.com/rhysd/extract-repo-url
 [crates-io badge]: https://img.shields.io/crates/v/extract-repo-url.svg
+[Windows Build]: https://ci.appveyor.com/api/projects/status/w1cue3ohnakb50qe/branch/master?svg=true
+[Appveyor]: https://ci.appveyor.com/project/rhysd/extract-repo-url/branch/master
