@@ -13,6 +13,7 @@ include = ["LICENSE.txt", "Cargo.toml", "src/*.rs"]
 
 [badges]
 travis-ci = { repository = "rhysd/extract-repo-url" }
+appveyor = { repository = "rhysd/extract-repo-url" }
 maintenance = { status = "actively-developed" }
 
 [dependencies]

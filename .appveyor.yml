@@ -1,0 +1,48 @@
+environment:
+  global:
+    RUST_VERSION: stable
+    CRATE_NAME: extract-repo-url
+    TARGET: x86_64-pc-windows-msvc
+    RUST_TEST_THREADS: 1
+
+install:
+  - curl -sSf -o rustup-init.exe https://win.rustup.rs/
+  - rustup-init.exe -y --default-host %TARGET% --default-toolchain stable
+  - set PATH=%PATH%;C:\Users\appveyor\.cargo\bin
+  - rustc -Vv
+  - cargo -V
+
+test_script:
+  - cargo build
+  - cargo test
+
+before_deploy:
+  - cargo rustc --target %TARGET% --release --bin extract-repo-url -- -C lto
+  - ps: |
+      $DIR = "$($Env:CRATE_NAME)-$($Env:APPVEYOR_REPO_TAG_NAME)-$($Env:TARGET)"
+      $ZIP = "$ZIP.zip"
+      New-Item -Type Directory -Name "$DIR"
+      Copy-Item "target\$($Env:TARGET)\release\extract-repo-url.exe" "$DIR\\"
+      Copy-Item LICENSE.txt "$DIR\\"
+      Copy-Item README.md "$DIR\\"
+      7z a "$ZIP" "$DIR"
+      Push-AppveyorArtifact "$ZIP"
+
+deploy:
+  artifact: /.*\.zip/
+  auth_token:
+    secure: 1RVxydvw7uFM6akI2ir5hDqE9JUJEytyDVJDw6OvOv3vJIKvYV/+Q4oTGReU4MRu
+  description: ''
+  on:
+    appveyor_repo_tag: true
+  provider: GitHub
+
+cache:
+  - C:\Users\appveyor\.cargo\registry
+  - target
+
+notifications:
+  - provider: Email
+    on_build_success: false
+
+build: false

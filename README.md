@@ -2,6 +2,7 @@
 ==================
 [![Crates.io][crates-io badge]][repository]
 [![Linux/Mac Build Status][]][Travis CI]
+[![Windows Build][]][Appveyor]
 
 ## Installation
 
@@ -77,3 +78,5 @@ $ RUST_TEST_THREADS=1 cargo test
 [crates-io badge]: https://img.shields.io/crates/v/extract-repo-url.svg
 [Linux/Mac Build Status]: https://travis-ci.org/rhysd/extract-repo-url.svg?branch=master
 [Travis CI]: https://travis-ci.org/rhysd/extract-repo-url
+[Windows Build]: https://ci.appveyor.com/api/projects/status/w1cue3ohnakb50qe/branch/master?svg=true
+[Appveyor]: https://ci.appveyor.com/project/rhysd/extract-repo-url/branch/master
