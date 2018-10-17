@@ -35,6 +35,11 @@ version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
+name = "cargo-husky"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "cfg-if"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -77,6 +82,7 @@ dependencies = [
 name = "extract-repo-url"
 version = "1.0.1"
 dependencies = [
+ "cargo-husky 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "clipboard 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -279,6 +285,7 @@ dependencies = [
 "checksum atty 0.2.11 (registry+https://github.com/rust-lang/crates.io-index)" = "9a7d5b8723950951411ee34d271d99dddcc2035a16ab25310ea2c8cfd4369652"
 "checksum bitflags 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)" = "228047a76f468627ca71776ecdebd732a3423081fcf5125585bcd7c49886ce12"
 "checksum block 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)" = "0d8c1fef690941d3e7788d328517591fecc684c084084702d6ff1641e993699a"
+"checksum cargo-husky 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "91ee33f8f39e4b469dfcab5f86c2572355965b49329ff8a665b530cc52c1dfa3"
 "checksum cfg-if 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "0c4e7bb64a8ebb0d856483e1e682ea3422f883c5f5615a90d51a2c82fe87fdd3"
 "checksum clap 2.32.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b957d88f4b6a63b9d70d5f454ac8011819c6efa7727858f458ab71c756ce2d3e"
 "checksum clipboard 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "25a904646c0340239dcf7c51677b33928bf24fdf424b79a57909c0109075b2e7"

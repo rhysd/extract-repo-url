@@ -236,6 +236,13 @@ mod tests {
     fn real_world() {
         use io::BufRead;
 
+        if let Ok(var) = env::var("RUN_SHORT_TEST") {
+            if var != "" {
+                // Skip on short test
+                return;
+            }
+        }
+
         let mut path = env::current_dir().unwrap();
         path.push(Path::new(file!()).parent().unwrap());
         path.push("testdata");

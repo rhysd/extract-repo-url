@@ -1,0 +1,6 @@
+#!/bin/sh
+
+echo '+cargo test'
+cargo fmt -- --check
+cargo clippy -- -D warnings
+RUST_TEST_THREADS=1 RUN_SHORT_TEST=true cargo test
