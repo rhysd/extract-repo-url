@@ -1,6 +1,7 @@
 `extract-repo-url`
 ==================
 [![Crates.io][crates-io badge]][repository]
+[![Linux/Mac Build Status][]][Travis CI]
 
 ## Installation
 
@@ -74,3 +75,5 @@ $ RUST_TEST_THREADS=1 cargo test
 
 [repository]: https://github.com/rhysd/extract-repo-url
 [crates-io badge]: https://img.shields.io/crates/v/extract-repo-url.svg
+[Linux/Mac Build Status]: https://travis-ci.org/rhysd/extract-repo-url.svg?branch=master
+[Travis CI]: https://travis-ci.org/rhysd/extract-repo-url

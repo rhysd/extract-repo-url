@@ -1,0 +1,64 @@
+language: rust
+rust: stable
+
+env:
+  global:
+    - CRATE_NAME=extract-repo-url
+
+matrix:
+  include:
+    - env: TARGET=x86_64-unknown-linux-gnu
+      os: linux
+    - env: TARGET=x86_64-apple-darwin
+      os: osx
+
+before_install:
+  - rustup self update
+  - rustup component add rustfmt-preview
+
+install:
+  - source ~/.cargo/env || true
+
+before_script:
+  - |
+      if [[ $TRAVIS_OS_NAME != osx ]]; then
+        export DISPLAY=:99.0
+        sh -e /etc/init.d/xvfb start
+        sleep 3 # give xvfb some time to start
+      fi
+
+script:
+  - cargo build
+  - cargo fmt -- --check
+  - RUST_TEST_THREADS=1 cargo test
+
+before_deploy:
+  - test -f Cargo.lock || cargo generate-lockfile
+  - cargo rustc --bin extract-repo-url --target $TARGET --release -- -C lto
+  - mkdir $CRATE_NAME-$TRAVIS_TAG-$TARGET
+  - cp extract-repo-url LICENSE.txt README.md $CRATE_NAME-$TRAVIS_TAG-$TARGET/
+  - tar czf $CRATE_NAME-$TRAVIS_TAG-$TARGET.tar.gz $CRATE_NAME-$TRAVIS_TAG-$TARGET/
+
+deploy:
+  api_key:
+    secure: lBxhbeZeo68BURBldumMBRTAGX3ZpjebrSBp1KZzzzmBh/tttxVpa9T5EcwP3Lsb6HKKThY10lcC41Y7HYiaMAtf0nvmtkT8EOpwzSzd0GHic3AsgJz4rEQYG0hZG/OfvgKqL2dykEawdxzVJy1xCDMudFPLjFXL+7uzrz23NP/VBrhs96EbLEQkCdsp3rX+lZugsbz6qBNeBrEaHxz2Y18i991+tAJSyf8ioo1Qx2prIbs7spAvBel8McODTpc96072imxdMYi8aYs6kjL/fRzXoRd6AugkyrGvjE0i+8GLwaESV5NaeIWweZDcTHCkQApW6wFM6RX4ww58BNCrwam+4pe//BG4QROr1ioPGVyyhEmpkySqB14Rm8RXiAdB2Kuoj4ru66w/qhH/l2FOydII5IfaVwpVUeZBpZ6qu/UpwvWexC2VrOxIqm+HO5orzpV9WEaQztIArFd2pcitcUuP/GOlAhKBV+LRzSGICCYTOLeeC0FMsG/p3OZG+fD3CUo5fQEzUIownDJtrVCW0jOHLVZUKPIzc2OFq9g8lSEXyjSDq9hLqapypG84G2jP2tUY5llVZ1NEkzkpPXVGF/WyuKxyCi0PEVPEn3vSG3rqH0a8AIy1vQ8ycqPS+apOZwCTwj4W3mdER8zs7iXV4wbMTQabKLJByYctxHAfgLY=
+  file: $CRATE_NAME-$TRAVIS_TAG-$TARGET.tar.gz
+  on:
+    condition: $TRAVIS_TAG =~ ^\d+\.\d+\.\d+$
+    tags: true
+  provider: releases
+  skip_cleanup: true
+
+cache: cargo
+before_cache:
+  # Travis can't cache files that are not readable by "others"
+  - chmod -R a+r $HOME/.cargo
+
+notifications:
+  email:
+    on_success: never
+
+addons:
+  apt:
+    packages:
+    - xorg-dev
