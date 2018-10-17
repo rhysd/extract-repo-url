@@ -1,10 +1,5 @@
-# Based on the "trust" template v0.1.2
-# https://github.com/japaric/trust/tree/v0.1.2
-
-dist: trusty
 language: rust
-services: docker
-sudo: required
+rust: stable
 
 env:
   global:
@@ -12,44 +7,36 @@ env:
 
 matrix:
   include:
-    # Linux
-    - env: TARGET=arm-unknown-linux-gnueabi
-    - env: TARGET=i686-unknown-linux-gnu
     - env: TARGET=x86_64-unknown-linux-gnu
-
-    # OSX
+      os: linux
     - env: TARGET=x86_64-apple-darwin
       os: osx
 
-    # *BSD
-    - env: TARGET=x86_64-unknown-freebsd DISABLE_TESTS=1
-
-    # Windows
-    - env: TARGET=x86_64-pc-windows-gnu
-
 before_install:
-  - set -e
   - rustup self update
+  - rustup component add rustfmt-preview
 
 install:
-  - sh ci/install.sh
   - source ~/.cargo/env || true
 
 script:
-  - bash ci/script.sh
-
-after_script: set +e
+  - cargo build
+  - cargo fmt -- --check
+  - RUST_TEST_THREADS=1 cargo test
 
 before_deploy:
-  - sh ci/before_deploy.sh
+  - test -f Cargo.lock || cargo generate-lockfile
+  - cargo rustc --bin extract-repo-url --target $TARGET --release -- -C lto
+  - mkdir $CRATE_NAME-$TRAVIS_TAG-$TARGET
+  - cp extract-repo-url LICENSE.txt README.md $CRATE_NAME-$TRAVIS_TAG-$TARGET/
+  - tar czf $CRATE_NAME-$TRAVIS_TAG-$TARGET.tar.gz $CRATE_NAME-$TRAVIS_TAG-$TARGET/
 
 deploy:
   api_key:
     secure: lBxhbeZeo68BURBldumMBRTAGX3ZpjebrSBp1KZzzzmBh/tttxVpa9T5EcwP3Lsb6HKKThY10lcC41Y7HYiaMAtf0nvmtkT8EOpwzSzd0GHic3AsgJz4rEQYG0hZG/OfvgKqL2dykEawdxzVJy1xCDMudFPLjFXL+7uzrz23NP/VBrhs96EbLEQkCdsp3rX+lZugsbz6qBNeBrEaHxz2Y18i991+tAJSyf8ioo1Qx2prIbs7spAvBel8McODTpc96072imxdMYi8aYs6kjL/fRzXoRd6AugkyrGvjE0i+8GLwaESV5NaeIWweZDcTHCkQApW6wFM6RX4ww58BNCrwam+4pe//BG4QROr1ioPGVyyhEmpkySqB14Rm8RXiAdB2Kuoj4ru66w/qhH/l2FOydII5IfaVwpVUeZBpZ6qu/UpwvWexC2VrOxIqm+HO5orzpV9WEaQztIArFd2pcitcUuP/GOlAhKBV+LRzSGICCYTOLeeC0FMsG/p3OZG+fD3CUo5fQEzUIownDJtrVCW0jOHLVZUKPIzc2OFq9g8lSEXyjSDq9hLqapypG84G2jP2tUY5llVZ1NEkzkpPXVGF/WyuKxyCi0PEVPEn3vSG3rqH0a8AIy1vQ8ycqPS+apOZwCTwj4W3mdER8zs7iXV4wbMTQabKLJByYctxHAfgLY=
-  file_glob: true
-  file: $CRATE_NAME-$TRAVIS_TAG-$TARGET.*
+  file: $CRATE_NAME-$TRAVIS_TAG-$TARGET.tar.gz
   on:
-    condition: $TRAVIS_RUST_VERSION = stable
+    condition: $TRAVIS_TAG =~ ^\d+\.\d+\.\d+$
     tags: true
   provider: releases
   skip_cleanup: true
