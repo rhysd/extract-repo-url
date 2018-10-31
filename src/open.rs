@@ -1,4 +1,4 @@
-use error::{Error, Result};
+use crate::error::{Error, Result};
 use std::env;
 use std::process::Command;
 
@@ -11,15 +11,11 @@ static OPEN_COMMANDS: &[&[&str]] = &[&["xdg-open"], &["gvfs-open"], &["gnome-ope
 #[cfg(target_os = "windows")]
 static OPEN_COMMANDS: &[&[&str]] = &[&["cmd", "/C", "start"]];
 
-#[cfg(
-    not(
-        any(
-            target_os = "windows",
-            target_os = "macos",
-            target_os = "linux"
-        )
-    )
-)]
+#[cfg(not(any(
+    target_os = "windows",
+    target_os = "macos",
+    target_os = "linux"
+)))]
 static OPEN_COMMANDS: &[&[&str]] = &[];
 
 pub fn open_in_browser(url: &str) -> Result<()> {

@@ -1,4 +1,4 @@
-use error::{Error, Result};
+use crate::error::{Error, Result};
 use regex;
 use regex::Regex;
 use std::env;
@@ -234,7 +234,7 @@ mod tests {
 
     #[test]
     fn real_world() {
-        use io::BufRead;
+        use crate::io::BufRead;
 
         if let Ok(var) = env::var("RUN_SHORT_TEST") {
             if var != "" {

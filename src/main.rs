@@ -6,8 +6,8 @@ extern crate lazy_static;
 
 mod error;
 
-use error::Error;
-use error::Result;
+use crate::error::Error;
+use crate::error::Result;
 
 mod extract;
 
@@ -47,7 +47,7 @@ fn parse_argv() -> Result<(String, Action)> {
     let text = if let Some(text) = matches.value_of("text") {
         text.to_string()
     } else if matches.is_present("stdin") {
-        use io::Read;
+        use crate::io::Read;
         let mut buf = String::new();
         io::stdin().read_to_string(&mut buf)?;
         buf
